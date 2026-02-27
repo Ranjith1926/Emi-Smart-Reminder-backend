@@ -20,6 +20,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ────────────────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+
+// Railway provides MYSQL_URL in URI format: mysql://user:pass@host:port/db
+var railwayMysqlUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? Environment.GetEnvironmentVariable("MYSQL_URL");
+if (!string.IsNullOrEmpty(railwayMysqlUrl))
+{
+    var uri = new Uri(railwayMysqlUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Server={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};User={userInfo[0]};Password={userInfo[1]};AllowPublicKeyRetrieval=true;SslMode=Preferred;";
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(3)));
@@ -206,8 +216,7 @@ RecurringJob.AddOrUpdate<OtpCleanupJob>(
     Cron.Hourly,
     new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
-// ─── Auto-migrate on startup (dev only) ──────────────────────────────────────
-if (app.Environment.IsDevelopment())
+// ─── Auto-migrate on startup ─────────────────────────────────────────────────
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
