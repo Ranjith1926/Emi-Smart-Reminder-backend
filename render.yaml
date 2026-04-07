@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: emi-smart-reminder-backend
+    runtime: docker
+    plan: free
+    buildCommand: dotnet build EMI-REMAINDER/EMI-REMAINDER.csproj
+    startCommand: dotnet run --project EMI-REMAINDER/EMI-REMAINDER.csproj
+    envVars:
+      - key: DefaultConnection
+        sync: false
+      - key: Jwt__Key
+        sync: false
+      - key: Jwt__Issuer
+        sync: false
+      - key: Jwt__Audience
+        sync: false
+      - key: Twilio__AccountSid
+        sync: false
+      - key: Twilio__AuthToken
+        sync: false
+      - key: Twilio__FromNumber
+        sync: false
+      - key: Razorpay__KeyId
+        sync: false
+      - key: Razorpay__KeySecret
+        sync: false
