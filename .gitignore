@@ -40,3 +40,4 @@ Desktop.ini
 ## Rider / JetBrains
 .idea/
 *.sln.iml
+.env
